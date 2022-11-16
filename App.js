@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
   SafeAreaView,
   Image,
@@ -14,9 +14,9 @@ import {
 } from 'react-native';
 import axios from 'axios';
 // import Config from 'react-native-config';
-import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
-import {Colors} from 'react-native/Libraries/NewAppScreen';
-import PermissionsService, {isIOS} from './Permissions';
+import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
+import { Colors } from 'react-native/Libraries/NewAppScreen';
+import PermissionsService, { isIOS } from './Permissions';
 
 axios.interceptors.request.use(
   async config => {
@@ -31,7 +31,7 @@ axios.interceptors.request.use(
   error => error,
 );
 
-export const {height, width} = Dimensions.get('window');
+export const { height, width } = Dimensions.get('window');
 
 export const configureUrl = url => {
   let authUrl = url;
@@ -42,7 +42,7 @@ export const configureUrl = url => {
 };
 
 export const fonts = {
-  Bold: {fontFamily: 'Roboto-Bold'},
+  Bold: { fontFamily: 'Roboto-Bold' },
 };
 
 const options = {
@@ -62,21 +62,35 @@ const App = () => {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
-  const getPredication = async params => {
-    return new Promise((resolve, reject) => {
-      var bodyFormData = new FormData();
-      bodyFormData.append('file', params);
-      const url = "http://127.0.0.1:5000/predict";
-      return axios
-        .post(url, bodyFormData)
-        .then(response => {
-          resolve(response);
-        })
-        .catch(error => {
-          setLabel('Failed to predicting.');
-          reject('err', error);
-        });
-    });
+  const getPredication = async (params) => {
+    var bodyFormData = new FormData();
+
+    bodyFormData.append('img', params);
+    const url = "http://143.198.97.209:5000/predict";
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'multipart/form-data',
+        'Accept-Language': 'ru,en;q=0.9',
+      },
+      body: bodyFormData,
+    })
+      .then(response => response.json()) // returns promise
+      .then(responseJson => {
+        console.log(responseJson);
+        if (responseJson?.class) {
+          setLabel(responseJson.class);
+          setResult(responseJson.confidence);
+        } else {
+          setLabel('Failed to predict');
+        }
+      })
+      .catch(error => {
+        console.log("err->", error)
+        setLabel('Failed to predicting.');
+        return error;
+      });
   };
 
   const manageCamera = async type => {
@@ -125,13 +139,7 @@ const App = () => {
       name: response.assets[0].fileName,
       type: response.assets[0].type,
     };
-    const res = await getPredication(params);
-    if (res?.data?.class) {
-      setLabel(res.data.class);
-      setResult(res.data.confidence);
-    } else {
-      setLabel('Failed to predict');
-    }
+    await getPredication(params)
   };
 
   const openLibrary = async () => {
@@ -156,14 +164,14 @@ const App = () => {
       <ImageBackground
         blurRadius={10}
         source={require("./background.jpeg")}
-        style={{height: height, width: width}}
+        style={{ height: height, width: width }}
       />
       <Text style={styles.title}>{'Plant Disease Prediction App'}</Text>
       <TouchableOpacity onPress={clearOutput} style={styles.clearStyle}>
         <Image source={require("./clean.png")} style={styles.clearImage} />
       </TouchableOpacity>
       {(image?.length && (
-        <Image source={{uri: image}} style={styles.imageStyle} />
+        <Image source={{ uri: image }} style={styles.imageStyle} />
       )) ||
         null}
       {(result && label && (
@@ -212,9 +220,9 @@ const styles = StyleSheet.create({
     ...fonts.Bold,
     color: '#FFF',
   },
-  clearImage: {height: 40, width: 40, tintColor: '#FFF'},
+  clearImage: { height: 40, width: 40, tintColor: '#FFF' },
   mainOuter: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     justifyContent: 'space-between',
     position: 'absolute',
     top: height / 1.6,
@@ -255,10 +263,10 @@ const styles = StyleSheet.create({
     tintColor: '#FFF',
     zIndex: 10,
   },
-  space: {marginVertical: 10, marginHorizontal: 10},
-  labelText: {color: '#FFF', fontSize: 20, ...fonts.Bold},
-  resultText: {fontSize: 32, ...fonts.Bold},
-  imageIcon: {height: 40, width: 40, tintColor: '#000'},
+  space: { marginVertical: 10, marginHorizontal: 10 },
+  labelText: { color: '#FFF', fontSize: 15,  },
+  resultText: { fontSize: 32, ...fonts.Bold },
+  imageIcon: { height: 40, width: 40, tintColor: '#000' },
   emptyText: {
     position: 'absolute',
     top: height / 1.6,

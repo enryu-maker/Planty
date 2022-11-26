@@ -66,7 +66,7 @@ const App = () => {
     var bodyFormData = new FormData();
 
     bodyFormData.append('img', params);
-    const url = "http://143.198.97.209:5000/predict";
+    const url = "http://143.198.130.3:8000/predict/";
     fetch(url, {
       method: 'POST',
       headers: {
@@ -166,7 +166,7 @@ const App = () => {
         source={require("./background.jpeg")}
         style={{ height: height, width: width }}
       />
-      <Text style={styles.title}>{'Plant Disease Prediction App'}</Text>
+      <Text style={styles.title}>{'Plant Disease Prediction App \n by Tareg Alafisan'}</Text>
       <TouchableOpacity onPress={clearOutput} style={styles.clearStyle}>
         <Image source={require("./clean.png")} style={styles.clearImage} />
       </TouchableOpacity>
